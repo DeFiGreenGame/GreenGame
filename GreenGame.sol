@@ -154,10 +154,14 @@ contract GreenGame is Ownable {
             payout(parents[winner], winnerParentReward);
             emit DonationRewardSent(sender, parents[winner], winnerParentReward);
             total = total.add(winnerParentReward);
-            if (donationsCountReceivedAlready[newTable][winner] > t.maxDonationsCount){
-                winner = rootAddress;
-            } else {
+            if (t.maxDonationsCount == 0) {
                 donationsCountReceivedAlready[newTable][winner]++;
+            } else {
+                if (donationsCountReceivedAlready[newTable][winner] > t.maxDonationsCount){
+                    winner = rootAddress;
+                } else {
+                    donationsCountReceivedAlready[newTable][winner]++;
+                }
             }
             payout(winner, winnerReward);
             emit DonationRewardSent(sender, winner, winnerReward);
