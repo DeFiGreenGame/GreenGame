@@ -66,7 +66,6 @@ contract GreenGameTest is GreenGame {
 
     function checkJumpTableAtInitialState() public {
         // 0 ->
-        Assert.equal(jumpValues[0][0], 0 ether / 10, "jump from 0 to 0 has incorrect cost");
         Assert.equal(jumpValues[0][1], 1 ether / 10, "jump from 0 to 1 has incorrect cost");
         Assert.equal(jumpValues[0][2], 3 ether / 10, "jump from 0 to 2 has incorrect cost");
         Assert.equal(jumpValues[0][3], 7 ether / 10, "jump from 0 to 3 has incorrect cost");
@@ -78,16 +77,58 @@ contract GreenGameTest is GreenGame {
         Assert.equal(jumpValues[0][9], 502 ether / 10, "jump from 0 to 9 has incorrect cost");
         Assert.equal(jumpValues[0][10], 1002 ether / 10, "jump from 0 to 10 has incorrect cost");
         // 1 ->
-        Assert.equal(jumpValues[1][0], 0 ether / 10, "jump from 0 to 0 has incorrect cost");
-        Assert.equal(jumpValues[1][1], 0 ether / 10, "jump from 0 to 1 has incorrect cost");
-        Assert.equal(jumpValues[1][2], 2 ether / 10, "jump from 0 to 2 has incorrect cost");
-        Assert.equal(jumpValues[1][3], 6 ether / 10, "jump from 0 to 3 has incorrect cost");
-        Assert.equal(jumpValues[1][4], 14 ether / 10, "jump from 0 to 4 has incorrect cost");
-        Assert.equal(jumpValues[1][5], 30 ether / 10, "jump from 0 to 5 has incorrect cost");
-        Assert.equal(jumpValues[1][6], 62 ether / 10, "jump from 0 to 6 has incorrect cost");
-        Assert.equal(jumpValues[1][7], 126 ether / 10, "jump from 0 to 7 has incorrect cost");
-        Assert.equal(jumpValues[1][8], 251 ether / 10, "jump from 0 to 8 has incorrect cost");
-        Assert.equal(jumpValues[1][9], 501 ether / 10, "jump from 0 to 9 has incorrect cost");
-        Assert.equal(jumpValues[1][10], 1001 ether / 10, "jump from 0 to 10 has incorrect cost");
+        Assert.equal(jumpValues[1][2], 2 ether / 10, "jump from 1 to 2 has incorrect cost");
+        Assert.equal(jumpValues[1][3], 6 ether / 10, "jump from 1 to 3 has incorrect cost");
+        Assert.equal(jumpValues[1][4], 14 ether / 10, "jump from 1 to 4 has incorrect cost");
+        Assert.equal(jumpValues[1][5], 30 ether / 10, "jump from 1 to 5 has incorrect cost");
+        Assert.equal(jumpValues[1][6], 62 ether / 10, "jump from 1 to 6 has incorrect cost");
+        Assert.equal(jumpValues[1][7], 126 ether / 10, "jump from 1 to 7 has incorrect cost");
+        Assert.equal(jumpValues[1][8], 251 ether / 10, "jump from 1 to 8 has incorrect cost");
+        Assert.equal(jumpValues[1][9], 501 ether / 10, "jump from 1 to 9 has incorrect cost");
+        Assert.equal(jumpValues[1][10], 1001 ether / 10, "jump from 1 to 10 has incorrect cost");
+        // 2 ->
+        Assert.equal(jumpValues[2][3], 4 ether / 10, "jump from 2 to 3 has incorrect cost");
+        Assert.equal(jumpValues[2][4], 12 ether / 10, "jump from 2 to 4 has incorrect cost");
+        Assert.equal(jumpValues[2][5], 28 ether / 10, "jump from 2 to 5 has incorrect cost");
+        Assert.equal(jumpValues[2][6], 60 ether / 10, "jump from 2 to 6 has incorrect cost");
+        Assert.equal(jumpValues[2][7], 124 ether / 10, "jump from 2 to 7 has incorrect cost");
+        Assert.equal(jumpValues[2][8], 249 ether / 10, "jump from 2 to 8 has incorrect cost");
+        Assert.equal(jumpValues[2][9], 499 ether / 10, "jump from 2 to 9 has incorrect cost");
+        Assert.equal(jumpValues[2][10], 999 ether / 10, "jump from 2 to 10 has incorrect cost");
+        // 3 ->
+        Assert.equal(jumpValues[3][4], 8 ether / 10, "jump from 3 to 4 has incorrect cost");
+        Assert.equal(jumpValues[3][5], 24 ether / 10, "jump from 3 to 5 has incorrect cost");
+        Assert.equal(jumpValues[3][6], 56 ether / 10, "jump from 3 to 6 has incorrect cost");
+        Assert.equal(jumpValues[3][7], 120 ether / 10, "jump from 3 to 7 has incorrect cost");
+        Assert.equal(jumpValues[3][8], 245 ether / 10, "jump from 3 to 8 has incorrect cost");
+        Assert.equal(jumpValues[3][9], 495 ether / 10, "jump from 3 to 9 has incorrect cost");
+        Assert.equal(jumpValues[3][10], 995 ether / 10, "jump from 3 to 10 has incorrect cost");
+        // 4 ->
+        Assert.equal(jumpValues[4][5], 16 ether / 10, "jump from 4 to 5 has incorrect cost");
+        Assert.equal(jumpValues[4][6], 48 ether / 10, "jump from 4 to 6 has incorrect cost");
+        Assert.equal(jumpValues[4][7], 112 ether / 10, "jump from 4 to 7 has incorrect cost");
+        Assert.equal(jumpValues[4][8], 237 ether / 10, "jump from 4 to 8 has incorrect cost");
+        Assert.equal(jumpValues[4][9], 487 ether / 10, "jump from 4 to 9 has incorrect cost");
+        Assert.equal(jumpValues[4][10], 987 ether / 10, "jump from 4 to 10 has incorrect cost");
+        // 5 ->
+        Assert.equal(jumpValues[5][6], 32 ether / 10, "jump from 5 to 6 has incorrect cost");
+        Assert.equal(jumpValues[5][7], 96 ether / 10, "jump from 5 to 7 has incorrect cost");
+        Assert.equal(jumpValues[5][8], 221 ether / 10, "jump from 5 to 8 has incorrect cost");
+        Assert.equal(jumpValues[5][9], 471 ether / 10, "jump from 5 to 9 has incorrect cost");
+        Assert.equal(jumpValues[5][10], 971 ether / 10, "jump from 5 to 10 has incorrect cost");
+        // 6 ->
+        Assert.equal(jumpValues[6][7], 64 ether / 10, "jump from 6 to 7 has incorrect cost");
+        Assert.equal(jumpValues[6][8], 189 ether / 10, "jump from 6 to 8 has incorrect cost");
+        Assert.equal(jumpValues[6][9], 439 ether / 10, "jump from 6 to 9 has incorrect cost");
+        Assert.equal(jumpValues[6][10], 939 ether / 10, "jump from 6 to 10 has incorrect cost");
+        // 7 ->
+        Assert.equal(jumpValues[7][8], 125 ether / 10, "jump from 7 to 8 has incorrect cost");
+        Assert.equal(jumpValues[7][9], 375 ether / 10, "jump from 7 to 9 has incorrect cost");
+        Assert.equal(jumpValues[7][10], 875 ether / 10, "jump from 7 to 10 has incorrect cost");
+        // 8 ->
+        Assert.equal(jumpValues[8][9], 250 ether / 10, "jump from 8 to 9 has incorrect cost");
+        Assert.equal(jumpValues[8][10], 750 ether / 10, "jump from 8 to 10 has incorrect cost");
+        // 9 ->
+        Assert.equal(jumpValues[9][10], 500 ether / 10, "jump from 9 to 10 has incorrect cost");
     }
 }
