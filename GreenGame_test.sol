@@ -4,10 +4,16 @@ import "remix_accounts.sol";
 import "GreenGame.sol";
 
 contract GreenGameTest is GreenGame {
+    address testCharity;
     address acc0;
     address acc1;
     address acc2;
     address acc3;
+    address acc4;
+    address acc5;
+    address acc6;
+    address acc7;
+    address acc8;
 
     function beforeAll() public {
         // game = new GreenGame();
@@ -15,6 +21,12 @@ contract GreenGameTest is GreenGame {
         acc1 = TestsAccounts.getAccount(1);
         acc2 = TestsAccounts.getAccount(2);
         acc3 = TestsAccounts.getAccount(3);
+        acc4 = TestsAccounts.getAccount(4);
+        acc5 = TestsAccounts.getAccount(5);
+        acc6 = TestsAccounts.getAccount(6);
+        acc7 = TestsAccounts.getAccount(7);
+        acc8 = TestsAccounts.getAccount(8);
+        testCharity = TestsAccounts.getAccount(9);
     }
 
     function checkInitialState() public {
@@ -131,4 +143,186 @@ contract GreenGameTest is GreenGame {
         // 9 ->
         Assert.equal(jumpValues[9][10], 500 ether / 10, "jump from 9 to 10 has incorrect cost");
     }
+
+    /// #sender: account-1
+    /// #value: 100000000000000000
+    function checkTableBuy1() public payable {
+        uint total = rootAddress.balance;
+        Assert.equal(address2table[acc1], 0, "acc1 should be on table 0");
+        buy(acc2);
+        Assert.equal(address2table[acc1], 1, "acc1 should jumo to table 1");
+        uint diff = rootAddress.balance - total;
+        Assert.equal(diff, msg.value, "zero sum game");
+    }
+
+    function checkSettingCharity() public {
+        setnewCharityAddress(testCharity);
+        Assert.equal(charityAddress, testCharity, "charity address should be changed");
+    }
+
+    /// #sender: account-2
+    /// #value: 100000000000000000
+    function checkTableBuy2() public payable {
+        uint total = charityAddress.balance + rootAddress.balance + acc1.balance;
+        Assert.equal(address2table[acc2], 0, "acc2 should be on table 0");
+        buy(acc1);
+        Assert.equal(address2table[acc2], 1, "acc2 should jumo to table 1");
+        uint diff = charityAddress.balance + rootAddress.balance + acc1.balance - total;
+        Assert.equal(diff, msg.value, "zero sum game");
+    }
+
+    function checkSitsCount() public {
+        Assert.equal(getTableAddressesCount(1), 3, "1 table");
+        Assert.equal(getTableAddressesCount(2), 1, "2 table (root)");
+        Assert.equal(getTableAddressesCount(3), 1, "3 table (root)");
+        Assert.equal(getTableAddressesCount(4), 1, "4 table (root)");
+        Assert.equal(getTableAddressesCount(5), 1, "5 table (root)");
+        Assert.equal(getTableAddressesCount(6), 1, "6 table (root)");
+        Assert.equal(getTableAddressesCount(7), 1, "7 table (root)");
+        Assert.equal(getTableAddressesCount(8), 1, "8 table (root)");
+        Assert.equal(getTableAddressesCount(9), 1, "9 table (root)");
+        Assert.equal(getTableAddressesCount(10), 1, "10 table (root)");
+    }
+
+    /// #sender: account-3
+    /// #value: 3100000000000000000
+    function checkTableBuy3() public payable {
+        uint charityBalance = charityAddress.balance;
+        uint rootBalance = rootAddress.balance;
+        uint acc1Balance = acc1.balance;
+
+        Assert.equal(address2table[acc3], 0, "acc3 should be on table 0");
+        buy(acc1);
+        Assert.equal(address2table[acc3], 5, "acc3 should jump to table 5");
+
+        uint diffCharity = charityAddress.balance - charityBalance;
+        Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
+
+        uint diffAcc1 = acc1.balance - acc1Balance;
+        Assert.equal(diffAcc1, msg.value / 4, "25% goes to parent");
+
+        uint diffRoot = rootAddress.balance - rootBalance;
+        uint remain = msg.value - diffCharity - diffAcc1;
+        Assert.equal(diffRoot, remain, "all remain goes to root");
+
+        Assert.equal(getTableAddressesCount(1), 4, "1 table");
+        Assert.equal(getTableAddressesCount(2), 2, "2 table (root)");
+        Assert.equal(getTableAddressesCount(3), 2, "3 table (root)");
+        Assert.equal(getTableAddressesCount(4), 2, "4 table (root)");
+        Assert.equal(getTableAddressesCount(5), 2, "5 table (root)");
+        Assert.equal(getTableAddressesCount(6), 1, "6 table (root)");
+        Assert.equal(getTableAddressesCount(7), 1, "7 table (root)");
+        Assert.equal(getTableAddressesCount(8), 1, "8 table (root)");
+        Assert.equal(getTableAddressesCount(9), 1, "9 table (root)");
+        Assert.equal(getTableAddressesCount(10), 1, "10 table (root)");
+    }
+
+    /// #sender: account-4
+    /// #value: 3100000000000000000
+    function checkTableBuy4() public payable {
+        uint charityBalance = charityAddress.balance;
+        uint rootBalance = rootAddress.balance;
+        uint acc1Balance = acc1.balance;
+
+        Assert.equal(address2table[acc4], 0, "acc4 should be on table 0");
+        buy(acc1);
+        Assert.equal(address2table[acc4], 5, "acc4 should jump to table 5");
+
+        uint diffCharity = charityAddress.balance - charityBalance;
+        Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
+
+        Assert.equal(address(this).balance, 0, "0 should be on a contract");
+
+        Assert.equal(getTableAddressesCount(1), 5, "1 table");
+        Assert.equal(getTableAddressesCount(2), 3, "2 table (root)");
+        Assert.equal(getTableAddressesCount(3), 3, "3 table (root)");
+        Assert.equal(getTableAddressesCount(4), 3, "4 table (root)");
+        Assert.equal(getTableAddressesCount(5), 3, "5 table (root)");
+        Assert.equal(getTableAddressesCount(6), 1, "6 table (root)");
+        Assert.equal(getTableAddressesCount(7), 1, "7 table (root)");
+        Assert.equal(getTableAddressesCount(8), 1, "8 table (root)");
+        Assert.equal(getTableAddressesCount(9), 1, "9 table (root)");
+        Assert.equal(getTableAddressesCount(10), 1, "10 table (root)");
+    }
+
+    /// #sender: account-0
+    /// #value: 30000000000000000000
+    function checkEnoughMoneyToBuy10TableFromAcc1() public payable {
+        payable(acc1).transfer(msg.value);
+        Assert.greaterThan(acc1.balance, uint(101000000000000000000), "acc1 balance should be greater than 101 BSC");
+    }
+
+    /// #sender: account-0
+    /// #value: 30000000000000000000
+    function checkEnoughMoneyToBuy10TableFromAcc2() public payable {
+        payable(acc2).transfer(msg.value);
+        Assert.greaterThan(acc2.balance, uint(101000000000000000000), "acc2 balance should be greater than 101 BSC");
+    }
+
+    /// #sender: account-1
+    /// #value: 100100000000000000000
+    function checkTableBuy5() public payable {
+        uint charityBalance = charityAddress.balance;
+        uint rootBalance = rootAddress.balance;
+        uint acc3Balance = acc3.balance;
+
+        Assert.equal(address2table[acc1], 1, "acc1 should be on table 1");
+        buy(acc3);
+        Assert.equal(address2table[acc1], 10, "acc1 should jump to table 10");
+
+        uint diffCharity = charityAddress.balance - charityBalance;
+        Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
+
+        uint diffAcc3 = acc3.balance - acc3Balance;
+        Assert.equal(diffAcc3, msg.value / 4, "25% goes to parent");
+
+        uint diffRoot = rootAddress.balance - rootBalance;
+        uint remain = msg.value - diffCharity - diffAcc3;
+        Assert.equal(diffRoot, remain, "all remain goes to root");
+
+        Assert.equal(getTableAddressesCount(1), 5, "1 table");
+        Assert.equal(getTableAddressesCount(2), 4, "2 table (root)");
+        Assert.equal(getTableAddressesCount(3), 4, "3 table (root)");
+        Assert.equal(getTableAddressesCount(4), 4, "4 table (root)");
+        Assert.equal(getTableAddressesCount(5), 4, "5 table (root)");
+        Assert.equal(getTableAddressesCount(6), 2, "6 table (root)");
+        Assert.equal(getTableAddressesCount(7), 2, "7 table (root)");
+        Assert.equal(getTableAddressesCount(8), 2, "8 table (root)");
+        Assert.equal(getTableAddressesCount(9), 2, "9 table (root)");
+        Assert.equal(getTableAddressesCount(10), 2, "10 table (root)");
+    }
+
+    /// #sender: account-2
+    /// #value: 100100000000000000000
+    function checkTableBuy6() public payable {
+        uint charityBalance = charityAddress.balance;
+        uint rootBalance = rootAddress.balance;
+        uint acc3Balance = acc3.balance;
+        uint acc1Balance = acc1.balance;
+
+        Assert.equal(address2table[acc2], 1, "acc1 should be on table 1");
+        buy(acc3);
+        Assert.equal(address2table[acc2], 10, "acc1 should jump to table 10");
+
+        uint diffCharity = charityAddress.balance - charityBalance;
+        Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
+
+        Assert.equal(address(this).balance, 0, "0 should be on a contract");
+
+        uint diffAcc1 = acc1.balance - acc1Balance;
+        Assert.greaterThan(diffAcc1, uint(0), "Acc1 should get something");
+
+
+        Assert.equal(getTableAddressesCount(1), 5, "1 table");
+        Assert.equal(getTableAddressesCount(2), 5, "2 table (root)");
+        Assert.equal(getTableAddressesCount(3), 5, "3 table (root)");
+        Assert.equal(getTableAddressesCount(4), 5, "4 table (root)");
+        Assert.equal(getTableAddressesCount(5), 5, "5 table (root)");
+        Assert.equal(getTableAddressesCount(6), 3, "6 table (root)");
+        Assert.equal(getTableAddressesCount(7), 3, "7 table (root)");
+        Assert.equal(getTableAddressesCount(8), 3, "8 table (root)");
+        Assert.equal(getTableAddressesCount(9), 3, "9 table (root)");
+        Assert.equal(getTableAddressesCount(10), 3, "10 table (root)");
+    }
+
 }

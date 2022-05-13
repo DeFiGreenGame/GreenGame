@@ -22,6 +22,10 @@ library SafeMath {
     function div(uint a, uint b) internal pure returns (uint c) { require(b > 0); c = a / b; }
 }
 
+interface IERC20 {
+    function transfer(address _to, uint256 _amount) external returns (bool);
+}
+
 contract Ownable {
     address public owner;
     address public newOwner;
@@ -115,7 +119,7 @@ contract GreenGame is Ownable {
         process(msg.value, msg.sender, rootAddress);
     }
 
-    function buy(address parent) external payable {
+    function buy(address parent) public payable {
         if (address2table[parent] < 1) {
             parent = rootAddress;
         }
@@ -264,7 +268,6 @@ contract GreenGame is Ownable {
     }
 
     // Admin Functions
-
     function setnewCharityAddress(address newCharityAddress) public onlyOwner {
         require(newCharityAddress != address(0));
         charityAddress = newCharityAddress;
@@ -273,5 +276,16 @@ contract GreenGame is Ownable {
     function setnewRootAddress(address newRootAddress) public onlyOwner {
         require(newRootAddress != address(0));
         rootAddress = newRootAddress;
+    }
+
+    // for any accidentally lost funds
+    function withdraw() public onlyOwner {
+        payout(owner, address(this).balance);
+    }
+
+    // for any tokens lost and might be acccidentally sent to this contract
+    function withdrawToken(address _tokenContract, uint256 _amount) public onlyOwner {
+        IERC20 tokenContract = IERC20(_tokenContract);
+        tokenContract.transfer(msg.sender, _amount);
     }
 }
