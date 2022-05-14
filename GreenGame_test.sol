@@ -45,22 +45,28 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
     function checkInitialState14() public { Assert.equal(getTableThreshold(9), 250 ether / 10, "[9] threshold should be equal to 25 BSC"); }
     function checkInitialState15() public { Assert.equal(getTableThreshold(10), 500 ether / 10, "[10] threshold should be equal to 50 BSC"); }
 
-    function checkRandomTableParamsChange1() public {
+    function checkRandomTableParamsChange1_1() public {
         // optional change params
         setTableParams(1_800000_000000_000000, 5, 10, 25, 5, 9, 4, 40, true);
+    }
+
+    function checkRandomTableParamsChange1_2() public {
         Assert.equal(getTableThreshold(5), 18 ether / 10, "[5] threshold should be equal to 1.8 BSC");
     }
 
-    function checkRandomTableParamsChange2() public {
+    function checkRandomTableParamsChange2_1() public {
         // returning back to initial params
         setTableParams(1_600000_000000_000000, 5, 10, 25, 5, 9, 4, 40, true);
+    }
+
+    function checkRandomTableParamsChange2_2() public {
         // nothing should be changed
         checkInitialState10();
     }
 
     /// #sender: account-1
     /// #value: 0
-    function checkNonAdminRandomTableParamsChange() public payable {
+    function checkNonAdminRandomTableParamsChange_1() public payable {
         // the low level call will return `false` if its execution reverts
         (bool success, bytes memory returnData) = address(this).call(
             abi.encodeWithSignature(
@@ -73,8 +79,11 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         } else {
             Assert.equal(false, false, "it should not be available for everyone to set table params");
         }
+    }
+
+    function checkNonAdminRandomTableParamsChange_2() public payable {
         // nothing should be changed
-        checkInitialState10();
+        checkInitialState5();
     }
 
         // 0 ->
@@ -143,34 +152,65 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         // 9 ->
     function checkJumpTableAtInitialState55() public { Assert.equal(jumpValues[9][10], 500 ether / 10, "jump from 9 to 10 has incorrect cost"); }
 
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkTableBuy1_1() public payable {
+        Assert.equal(address2table[acc1], 0, "acc1 should be on table 0");
+    }
+
     /// #sender: account-1
     /// #value: 100000000000000000
-    function checkTableBuy1() public payable {
+    function checkTableBuy1_2() public payable {
         uint total = rootAddress.balance;
-        Assert.equal(address2table[acc1], 0, "acc1 should be on table 0");
         buy(acc2);
         Assert.equal(address2table[acc1], 1, "acc1 should jump to table 1");
         uint diff = rootAddress.balance - total;
         Assert.equal(diff, msg.value, "zero sum game");
+    }
+
+    function checkTableBuy1_3() public payable {
         Assert.equal(address(this).balance, 0, "0 should be on a contract");
     }
 
-    function checkSettingCharity() public {
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkSettingCharity_1() public {
         setnewCharityAddress(testCharity);
+    }
+
+    function checkSettingCharity_2() public {
         Assert.equal(charityAddress, testCharity, "charity address should be changed");
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkTableBuy2_1() public payable {
+        Assert.equal(address2table[acc2], 0, "acc2 should be on table 0");
     }
 
     /// #sender: account-2
     /// #value: 100000000000000000
-    function checkTableBuy2() public payable {
+    function checkTableBuy2_2() public payable {
         uint total = charityAddress.balance + rootAddress.balance + acc1.balance;
-        Assert.equal(address2table[acc2], 0, "acc2 should be on table 0");
         buy(acc1);
         Assert.equal(address2table[acc2], 1, "acc2 should jump to table 1");
         uint diff = charityAddress.balance + rootAddress.balance + acc1.balance - total;
         Assert.equal(diff, msg.value, "zero sum game");
+    }
+
+    function checkTableBuy2_3() public payable {
         Assert.equal(address(this).balance, 0, "0 should be on a contract");
     }
+
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
     function checkSitsCount1() public { Assert.equal(getTableAddressesCount(1), 3, "1 table"); }
     function checkSitsCount2() public { Assert.equal(getTableAddressesCount(2), 1, "2 table (root)"); }
@@ -183,14 +223,21 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
     function checkSitsCount9() public { Assert.equal(getTableAddressesCount(9), 1, "9 table (root)"); }
     function checkSitsCount10() public { Assert.equal(getTableAddressesCount(10), 1, "10 table (root)"); }
 
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkTableBuy3_1() public payable {
+        Assert.equal(address2table[acc3], 0, "acc3 should be on table 0");
+    }
+
     /// #sender: account-3
     /// #value: 3100000000000000000
-    function checkTableBuy3() public payable {
+    function checkTableBuy3_2() public payable {
         uint charityBalance = charityAddress.balance;
         uint rootBalance = rootAddress.balance;
         uint acc1Balance = acc1.balance;
 
-        Assert.equal(address2table[acc3], 0, "acc3 should be on table 0");
         buy(acc1);
         Assert.equal(address2table[acc3], 5, "acc3 should jump to table 5");
 
@@ -203,51 +250,81 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         uint diffRoot = rootAddress.balance - rootBalance;
         uint remain = msg.value - diffCharity - diffAcc1;
         Assert.equal(diffRoot, remain, "all remain goes to root");
+    }
 
+    function checkTableBuy3_3() public payable {
         Assert.equal(getTableAddressesCount(5), 2, "5 table (root)");
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkTableBuy4_1() public payable {
+        Assert.equal(address2table[acc4], 0, "acc4 should be on table 0");
     }
 
     /// #sender: account-4
     /// #value: 3100000000000000000
-    function checkTableBuy4() public payable {
+    function checkTableBuy4_2() public payable {
         uint charityBalance = charityAddress.balance;
         uint rootBalance = rootAddress.balance;
         uint acc1Balance = acc1.balance;
 
-        Assert.equal(address2table[acc4], 0, "acc4 should be on table 0");
         buy(acc1);
         Assert.equal(address2table[acc4], 5, "acc4 should jump to table 5");
 
         uint diffCharity = charityAddress.balance - charityBalance;
         Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
+    }
 
+    function checkTableBuy4_3() public payable {
         Assert.equal(address(this).balance, 0, "0 should be on a contract");
+    }
 
+    function checkTableBuy4_4() public payable {
         Assert.equal(getTableAddressesCount(5), 3, "5 table (root)");
     }
 
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
     /// #sender: account-0
     /// #value: 30000000000000000000
-    function checkEnoughMoneyToBuy10TableFromAcc1() public payable {
+    function checkEnoughMoneyToBuy10TableFromAcc1_1() public payable {
         payable(acc1).transfer(msg.value);
+    }
+
+    function checkEnoughMoneyToBuy10TableFromAcc1_2() public payable {
         Assert.greaterThan(acc1.balance, uint(101000000000000000000), "acc1 balance should be greater than 101 BSC");
     }
 
     /// #sender: account-0
     /// #value: 30000000000000000000
-    function checkEnoughMoneyToBuy10TableFromAcc2() public payable {
+    function checkEnoughMoneyToBuy10TableFromAcc2_1() public payable {
         payable(acc2).transfer(msg.value);
+    }
+
+    function checkEnoughMoneyToBuy10TableFromAcc2_2() public payable {
         Assert.greaterThan(acc2.balance, uint(101000000000000000000), "acc2 balance should be greater than 101 BSC");
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkTableBuy5_1() public payable {
+        Assert.equal(address2table[acc1], 1, "acc1 should be on table 1");
     }
 
     /// #sender: account-1
     /// #value: 100100000000000000000
-    function checkTableBuy5() public payable {
+    function checkTableBuy5_2() public payable {
         uint charityBalance = charityAddress.balance;
         uint rootBalance = rootAddress.balance;
         uint acc3Balance = acc3.balance;
 
-        Assert.equal(address2table[acc1], 1, "acc1 should be on table 1");
         buy(acc3);
         Assert.equal(address2table[acc1], 10, "acc1 should jump to table 10");
 
@@ -260,19 +337,28 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         uint diffRoot = rootAddress.balance - rootBalance;
         uint remain = msg.value - diffCharity - diffAcc3;
         Assert.equal(diffRoot, remain, "all remain goes to root");
+    }
 
+    function checkTableBuy5_3() public payable {
         Assert.equal(getTableAddressesCount(10), 2, "10 table (root)");
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    function checkTableBuy6_1() public payable {
+        Assert.equal(address2table[acc2], 1, "acc1 should be on table 1");
     }
 
     /// #sender: account-2
     /// #value: 100100000000000000000
-    function checkTableBuy6() public payable {
+    function checkTableBuy6_2() public payable {
         uint charityBalance = charityAddress.balance;
         uint rootBalance = rootAddress.balance;
         uint acc3Balance = acc3.balance;
         uint acc1Balance = acc1.balance;
 
-        Assert.equal(address2table[acc2], 1, "acc1 should be on table 1");
         buy(acc3);
         Assert.equal(address2table[acc2], 10, "acc1 should jump to table 10");
 
@@ -283,8 +369,9 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
 
         uint diffAcc1 = acc1.balance - acc1Balance;
         Assert.greaterThan(diffAcc1, uint(0), "Acc1 should get something");
+    }
 
-
+    function checkTableBuy6_3() public payable {
         Assert.equal(getTableAddressesCount(10), 3, "10 table (root)");
     }
 
