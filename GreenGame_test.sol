@@ -59,7 +59,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
     }
 
     /// #sender: account-1
-    /// #value: 100
+    /// #value: 0
     function checkNonAdminRandomTableParamsChange() public payable {
         // the low level call will return `false` if its execution reverts
         (bool success, bytes memory returnData) = address(this).call(
@@ -149,9 +149,10 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         uint total = rootAddress.balance;
         Assert.equal(address2table[acc1], 0, "acc1 should be on table 0");
         buy(acc2);
-        Assert.equal(address2table[acc1], 1, "acc1 should jumo to table 1");
+        Assert.equal(address2table[acc1], 1, "acc1 should jump to table 1");
         uint diff = rootAddress.balance - total;
         Assert.equal(diff, msg.value, "zero sum game");
+        Assert.equal(address(this).balance, 0, "0 should be on a contract");
     }
 
     function checkSettingCharity() public {
@@ -165,9 +166,10 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         uint total = charityAddress.balance + rootAddress.balance + acc1.balance;
         Assert.equal(address2table[acc2], 0, "acc2 should be on table 0");
         buy(acc1);
-        Assert.equal(address2table[acc2], 1, "acc2 should jumo to table 1");
+        Assert.equal(address2table[acc2], 1, "acc2 should jump to table 1");
         uint diff = charityAddress.balance + rootAddress.balance + acc1.balance - total;
         Assert.equal(diff, msg.value, "zero sum game");
+        Assert.equal(address(this).balance, 0, "0 should be on a contract");
     }
 
     function checkSitsCount1() public { Assert.equal(getTableAddressesCount(1), 3, "1 table"); }
