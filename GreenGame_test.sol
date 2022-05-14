@@ -47,13 +47,13 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
 
     function checkRandomTableParamsChange1() public {
         // optional change params
-        setTableParams(5, 1_800000_000000_000000, 10, 25, 5, 9, 4, 40, true);
+        setTableParams(1_800000_000000_000000, 5, 10, 25, 5, 9, 4, 40, true);
         Assert.equal(getTableThreshold(5), 18 ether / 10, "[5] threshold should be equal to 1.8 BSC");
     }
 
     function checkRandomTableParamsChange2() public {
         // returning back to initial params
-        setTableParams(5, 1_600000_000000_000000, 10, 25, 5, 9, 4, 40, true);
+        setTableParams(1_600000_000000_000000, 5, 10, 25, 5, 9, 4, 40, true);
         // nothing should be changed
         checkInitialState10();
     }
@@ -65,7 +65,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         (bool success, bytes memory returnData) = address(this).call(
             abi.encodeWithSignature(
                 "setTableParams(uint,uint,uint,uint,uint,uint,uint,uint,bool)",
-                5, 1_800000_000000_000000, 10, 25, 5, 9, 4, 40, true
+                1_800000_000000_000000, 5, 10, 25, 5, 9, 4, 40, true
             )
         );
         if (success) {

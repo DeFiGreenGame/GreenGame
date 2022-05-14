@@ -251,11 +251,11 @@ contract GreenGame is Ownable {
     }
 
     function appendTable(uint256 thValue, uint8 charityShare, uint8 refShare, uint8 donationsCount, uint8 donationShare, uint8 refDonationShare, uint8 maxDonationsCount, bool forceRebuildJUmpValues) public onlyOwner {
-        setTableParams(thValue, charityShare, refShare, donationsCount, donationShare, refDonationShare, maxDonationsCount, uint8(tables.length), forceRebuildJUmpValues);
+        setTableParams(thValue, uint8(tables.length), charityShare, refShare, donationsCount, donationShare, refDonationShare, maxDonationsCount, forceRebuildJUmpValues);
         tableAddresses[uint8(tables.length - 1)].push(rootAddress);
     }
 
-    function setTableParams(uint256 thValue, uint8 charityShare, uint8 refShare, uint8 donationsCount, uint8 donationShare, uint8 refDonationShare, uint8 maxDonationsCount, uint8 num, bool forceRebuildJUmpValues) public onlyOwner {
+    function setTableParams(uint256 thValue, uint8 num, uint8 charityShare, uint8 refShare, uint8 donationsCount, uint8 donationShare, uint8 refDonationShare, uint8 maxDonationsCount, bool forceRebuildJUmpValues) public onlyOwner {
         Table memory t = Table(thValue, charityShare, refShare, donationsCount, donationShare, refDonationShare, maxDonationsCount);
         require(num > 0);
         require(num <= tables.length);
