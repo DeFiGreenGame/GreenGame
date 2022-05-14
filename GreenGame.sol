@@ -178,16 +178,10 @@ contract GreenGame is Ownable {
     }
 
     function payoutDonationReward(address winner, uint256 value, uint8 tableNum) private {
-        Table memory t = tables[tableNum];
-        if (t.maxDonationsCount == 0) {
-            donationsCountReceivedAlready[tableNum][winner]++;
-        } else {
-            if (donationsCountReceivedAlready[tableNum][winner] > t.maxDonationsCount){
-                winner = rootAddress;
-            } else {
-                donationsCountReceivedAlready[tableNum][winner]++;
-            }
+        if ((tables[tableNum].maxDonationsCount != 0) && (donationsCountReceivedAlready[tableNum][winner] > tables[tableNum].maxDonationsCount)) {
+            winner = rootAddress;
         }
+        donationsCountReceivedAlready[tableNum][winner]++;
         donationTableSum[tableNum][winner] += value;
         payout(winner, value);
         emit DonationRewardSent(winner, value, tableNum);
@@ -205,7 +199,7 @@ contract GreenGame is Ownable {
             winnerParent = parents[winnerParent];
             i++;
         }
-        if (i == 10) {
+        if (i == 5) {
             winnerParent = rootAddress;
         }
         if (i == 0) {
@@ -228,7 +222,7 @@ contract GreenGame is Ownable {
             parent = parents[parent];
             i++;
         }
-        if (i == 10) {
+        if (i == 5) {
             parent = rootAddress;
         }
         refTableSum[tableNum][parent] += value;
