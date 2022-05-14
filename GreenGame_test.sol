@@ -3,7 +3,7 @@ import "remix_tests.sol";
 import "remix_accounts.sol";
 import "GreenGame.sol";
 
-contract GreenGameTest is GreenGame {
+contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.getAccount(0)) {
     address testCharity;
     address acc0;
     address acc1;
