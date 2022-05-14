@@ -59,12 +59,12 @@ contract GreenGame is Ownable {
 
     struct Table {
         uint thValue;
-        uint charityShare;
-        uint refShare;
-        uint donationsCount;
-        uint donationShare;
-        uint refDonationShare;
-        uint maxDonationsCount;
+        uint8 charityShare;
+        uint8 refShare;
+        uint8 donationsCount;
+        uint8 donationShare;
+        uint8 refDonationShare;
+        uint8 maxDonationsCount;
     }
 
     Table[] public tables;
@@ -72,72 +72,88 @@ contract GreenGame is Ownable {
     address public charityAddress;
     address public rootAddress;
 
-    mapping(address => uint) public address2table;
+    mapping(address => uint8) public address2table;
     uint[][] public jumpValues;
-    mapping(uint => mapping(uint => uint)) public value2table;
-    mapping(uint => address[]) public tableAddresses;
-    mapping(uint => mapping(address => uint)) donationsCountReceivedAlready;
+    mapping(uint8 => mapping(uint => uint8)) public value2table;
+    mapping(uint8 => address[]) public tableAddresses;
+    mapping(uint8 => mapping(address => uint)) public donationsCountReceivedAlready;
+
+    mapping(uint8 => mapping(address => uint)) public refTableSum;
+    mapping(uint8 => mapping(address => uint)) public missedRefTableSum;
+    mapping(uint8 => mapping(address => uint)) public donationTableSum;
+    mapping(uint8 => mapping(address => uint)) public donationRefTableSum;
+    mapping(uint8 => mapping(address => uint)) public missedDonationRefTableSum;
+
+    mapping(address => uint) public refSum;
+    mapping(address => uint) public missedRefSum;
+    mapping(address => uint) public donationSum;
+    mapping(address => uint) public donationRefSum;
+    mapping(address => uint) public missedDonationRefSum;
+
 
     mapping(address => address) public parents;
 
-    event InvestmentReceived(address initiator, uint tableNum, address refferalAddress, uint amount);
-    event ReferralRewardSent(address initiator, address receiver, uint amount);
-    event DonationRewardSent(address initiator, address receiver, uint amount);
-    event ReferralDonationRewardSent(address initiator, address receiver, uint amount);
-    event CharitySent(address initiator, address receiver, uint amount);
+    event InvestmentReceived(uint8 table, address initiator, address refferal, uint amount);
+    event ReferralRewardSent(uint8 table, address initiator, address receiver, uint amount);
+    event DonationRewardSent(uint8 table, address initiator, address receiver, uint amount);
+    event DonationReferralRewardSent(uint8 table, address initiator, address receiver, uint amount);
+    event CharitySent(uint8 table, address initiator, address receiver, uint amount);
 
-    constructor() {
-        charityAddress = msg.sender;
-        rootAddress = msg.sender;
+    constructor(address root, address charity) {
+        rootAddress = root;
+        charityAddress = charity;
 
         // Zero Table
         tables.push(Table(0, 0, 0, 0, 0, 0, 0));
 
         // League #1
-        appendTable(100000_000000_000000, 10, 25, 5, 8, 5, 30, false);
-        appendTable(200000_000000_000000, 10, 25, 5, 8, 5, 30, false);
-        appendTable(400000_000000_000000, 10, 25, 5, 8, 5, 30, false);
-        appendTable(800000_000000_000000, 10, 25, 5, 8, 5, 30, false);
+        appendTable(100000_000000_000000, 10, 25, 5, 8, 5, 30, false); // 100000000000000000
+        appendTable(200000_000000_000000, 10, 25, 5, 8, 5, 30, false); // 200000000000000000
+        appendTable(400000_000000_000000, 10, 25, 5, 8, 5, 30, false); // 400000000000000000
+        appendTable(800000_000000_000000, 10, 25, 5, 8, 5, 30, false); // 800000000000000000
 
         // League #2
-        appendTable(1_600000_000000_000000, 10, 25, 5, 9, 4, 40, false);
-        appendTable(3_200000_000000_000000, 10, 25, 5, 9, 4, 40, false);
-        appendTable(6_400000_000000_000000, 10, 25, 5, 9, 4, 40, false);
+        appendTable(1_600000_000000_000000, 10, 25, 5, 9, 4, 40, false); // 1600000000000000000
+        appendTable(3_200000_000000_000000, 10, 25, 5, 9, 4, 40, false); // 3200000000000000000
+        appendTable(6_400000_000000_000000, 10, 25, 5, 9, 4, 40, false); // 6400000000000000000
 
         // League #3
-        appendTable(12_500000_000000_000000, 10, 25, 5, 10, 3, 50, false);
-        appendTable(25_000000_000000_000000, 10, 25, 5, 10, 3, 50, false);
+        appendTable(12_500000_000000_000000, 10, 25, 5, 10, 3, 50, false); // 12500000000000000000
+        appendTable(25_000000_000000_000000, 10, 25, 5, 10, 3, 50, false); // 25000000000000000000
 
         // League #4
-        appendTable(50_000000_000000_000000, 10, 25, 5, 11, 2, 0, false);
+        appendTable(50_000000_000000_000000, 10, 25, 5, 11, 2, 0, false); // 50000000000000000000
 
         rebuildJumpValues();
-        parents[rootAddress] = rootAddress;
     }
 
     receive() external payable {
-        process(msg.value, msg.sender, rootAddress);
+        buy(parents[msg.sender]);
     }
 
     function buy(address parent) public payable {
-        if (address2table[parent] < 1) {
-            parent = rootAddress;
+        if ((parents[msg.sender] != parent) && (parents[msg.sender] != address(0))) {
+            return process(msg.value, msg.sender, parents[msg.sender]);
         }
-        process(msg.value, msg.sender, parent);
+        if (parent == address(0)) {
+            return process(msg.value, msg.sender, rootAddress);
+        }
+        return process(msg.value, msg.sender, parent);
     }
 
     function process(uint value, address sender, address parent) private {
         require(value > 0);
         require(parent != address(0));
-        uint currentTable = address2table[sender];
-        uint newTable = value2table[currentTable][value];
+        uint8 currentTable = address2table[sender];
+        uint8 newTable = value2table[currentTable][value];
         require(newTable > currentTable);
 
-        emit InvestmentReceived(sender, newTable, parent, value);
+        emit InvestmentReceived(newTable, sender, parent, value);
 
         // Get table params
         Table memory t = tables[newTable];
 
+        // Sum counter
         uint total = 0;
 
         // Ref
@@ -145,40 +161,92 @@ contract GreenGame is Ownable {
         uint winnerReward = value.mul(t.donationShare).div(100);
         uint winnerParentReward = value.mul(t.refDonationShare).div(100);
 
-        payout(parent, refValue);
-        emit ReferralRewardSent(sender, parent, refValue);
+        // Direct Ref Payout
+        payoutReferralReward(newTable, sender, parent, refValue);
         total = total.add(refValue);
 
-        for (uint i = 1; i <= t.donationsCount; i++){
+        for (uint8 i = 1; i <= t.donationsCount; i++){
+            // Donation Ref Payout
             address winner = tableAddresses[newTable][random(tableAddresses[newTable].length, i)];
-            payout(parents[winner], winnerParentReward);
-            emit DonationRewardSent(sender, parents[winner], winnerParentReward);
+            payoutDonationReferralReward(newTable, sender, parents[winner], winnerParentReward);
             total = total.add(winnerParentReward);
-            if (t.maxDonationsCount == 0) {
-                donationsCountReceivedAlready[newTable][winner]++;
-            } else {
-                if (donationsCountReceivedAlready[newTable][winner] > t.maxDonationsCount){
-                    winner = rootAddress;
-                } else {
-                    donationsCountReceivedAlready[newTable][winner]++;
-                }
-            }
-            payout(winner, winnerReward);
-            emit DonationRewardSent(sender, winner, winnerReward);
+
+            // Donation Payout
+            payoutDonationReward(newTable, sender, winner, winnerReward);
             total = total.add(winnerReward);
         }
 
         address2table[sender] = newTable;
-        for (uint i = currentTable; i < newTable; i++){
+        for (uint8 i = currentTable; i < newTable; i++){
             tableAddresses[i + 1].push(sender);
         }
         parents[sender] = parent;
 
         payout(charityAddress, value.sub(total));
-        emit CharitySent(sender, charityAddress, value.sub(total));
+        emit CharitySent(newTable, sender, charityAddress, value.sub(total));
     }
 
-    function getTableAddressesCount(uint num) public view returns (uint) {
+    function payoutDonationReward(uint8 tableNum, address sender, address winner, uint value) private {
+        Table memory t = tables[tableNum];
+        if (t.maxDonationsCount == 0) {
+            donationsCountReceivedAlready[tableNum][winner]++;
+        } else {
+            if (donationsCountReceivedAlready[tableNum][winner] > t.maxDonationsCount){
+                winner = rootAddress;
+            } else {
+                donationsCountReceivedAlready[tableNum][winner]++;
+            }
+        }
+        donationTableSum[tableNum][winner] = donationTableSum[tableNum][winner].add(value);
+        payout(winner, value);
+        emit DonationRewardSent(tableNum, sender, winner, value);
+    }
+
+    function payoutDonationReferralReward(uint8 tableNum, address sender, address winnerParent, uint value) private {
+        uint8 i = 0;
+        while ((address2table[winnerParent] < tableNum) && (i < 10)) {
+            missedDonationRefTableSum[tableNum][winnerParent] = missedDonationRefTableSum[tableNum][winnerParent].add(value);
+            missedDonationRefSum[winnerParent] = missedDonationRefSum[winnerParent].add(value);
+            if (winnerParent == address(0)) {
+                winnerParent = rootAddress;
+                break;
+            }
+            winnerParent = parents[winnerParent];
+            i++;
+        }
+        if (i == 10) {
+            winnerParent = rootAddress;
+        }
+        if (i == 0) {
+            donationRefTableSum[tableNum][winnerParent] = donationRefTableSum[tableNum][winnerParent].add(value);
+            donationRefSum[winnerParent] = donationRefSum[winnerParent].add(value);
+        }
+        payout(winnerParent, value);
+        emit DonationReferralRewardSent(tableNum, sender, winnerParent, value);
+    }
+
+    function payoutReferralReward(uint8 tableNum, address sender, address parent, uint value) private {
+        uint8 i = 0;
+        while ((address2table[parent] < tableNum) && (i < 10)) {
+            missedRefTableSum[tableNum][parent] = missedRefTableSum[tableNum][parent].add(value);
+            missedRefSum[parent] = missedRefSum[parent].add(value);
+            if (parent == address(0)) {
+                parent = rootAddress;
+                break;
+            }
+            parent = parents[parent];
+            i++;
+        }
+        if (i == 10) {
+            parent = rootAddress;
+        }
+        refTableSum[tableNum][parent] = refTableSum[tableNum][parent].add(value);
+        refSum[parent] = refSum[parent].add(value);
+        payout(parent, value);
+        emit ReferralRewardSent(tableNum, sender, parent, value);
+    }
+
+    function getTableAddressesCount(uint8 num) public view returns (uint) {
         return tableAddresses[num].length;
     }
 
@@ -186,22 +254,22 @@ contract GreenGame is Ownable {
         return tables.length;
     }
 
-    function getTableThreshold(uint num) public view returns (uint) {
+    function getTableThreshold(uint8 num) public view returns (uint) {
         require (num <= tables.length);
         return tables[num].thValue;
     }
 
-    function appendTable(uint thValue, uint charityShare, uint refShare, uint donationsCount, uint donationShare, uint refDonationShare, uint maxDonationsCount, bool forceRebuildJUmpValues) public onlyOwner {
-        setTableParams(tables.length, thValue, charityShare, refShare, donationsCount, donationShare, refDonationShare, maxDonationsCount, forceRebuildJUmpValues);
-        tableAddresses[tables.length - 1].push(rootAddress);
+    function appendTable(uint thValue, uint8 charityShare, uint8 refShare, uint8 donationsCount, uint8 donationShare, uint8 refDonationShare, uint8 maxDonationsCount, bool forceRebuildJUmpValues) public onlyOwner {
+        setTableParams(uint8(tables.length), thValue, charityShare, refShare, donationsCount, donationShare, refDonationShare, maxDonationsCount, forceRebuildJUmpValues);
+        tableAddresses[uint8(tables.length - 1)].push(rootAddress);
     }
 
-    function setTableParams(uint num, uint thValue, uint charityShare, uint refShare, uint donationsCount, uint donationShare, uint refDonationShare, uint maxDonationsCount, bool forceRebuildJUmpValues) public onlyOwner {
+    function setTableParams(uint8 num, uint thValue, uint8 charityShare, uint8 refShare, uint8 donationsCount, uint8 donationShare, uint8 refDonationShare, uint8 maxDonationsCount, bool forceRebuildJUmpValues) public onlyOwner {
         Table memory t = Table(thValue, charityShare, refShare, donationsCount, donationShare, refDonationShare, maxDonationsCount);
         require(num > 0);
         require(num <= tables.length);
         require(t.thValue > 0);
-        require(t.charityShare + t.refShare + t.donationsCount.mul(t.donationShare) + t.donationsCount.mul(t.refDonationShare) == 100);
+        require(t.charityShare + t.refShare + t.donationsCount * t.donationShare + t.donationsCount * t.refDonationShare == 100);
 
         // if it's not a first table
         if (num > 1) {
@@ -227,8 +295,8 @@ contract GreenGame is Ownable {
 
     function rebuildJumpValues() public onlyOwner {
         if (jumpValues.length > 0) {
-            for (uint i = 0; i < tables.length; i++) {
-                for (uint j = 0; j < tables.length; j++) {
+            for (uint8 i = 0; i < tables.length; i++) {
+                for (uint8 j = 0; j < tables.length; j++) {
                     uint val = jumpValues[i][j];
                     value2table[i][val] = 0;
                 }
@@ -239,7 +307,7 @@ contract GreenGame is Ownable {
         // Initial state of Jump Matrix
         uint accum = 0;
         jumpValues.push([0]);
-        for (uint j = 1; j < tables.length; j++) {
+        for (uint8 j = 1; j < tables.length; j++) {
             accum = accum.add(tables[j].thValue);
             jumpValues[0].push(accum);
             // reversed mapping from sum to target table
@@ -247,9 +315,9 @@ contract GreenGame is Ownable {
         }
 
         // Rest part of Jump Matrix
-        for (uint i = 1; i < tables.length; i++) {
+        for (uint8 i = 1; i < tables.length; i++) {
             jumpValues.push([0]);
-            for (uint j = 1; j < tables.length; j++) {
+            for (uint8 j = 1; j < tables.length; j++) {
                 if (j < i) {
                     jumpValues[i].push(0);
                 } else {
@@ -259,10 +327,10 @@ contract GreenGame is Ownable {
             }
         }
 
-        address2table[rootAddress] = tables.length;
+        address2table[rootAddress] = uint8(tables.length);
     }
 
-    function random(uint max, uint salt) public view returns(uint) {
+    function random(uint max, uint8 salt) public view returns(uint) {
         return uint(keccak256(abi.encodePacked(block.timestamp.mul(salt), block.difficulty, msg.sender))) % max;
     }
 
@@ -279,7 +347,11 @@ contract GreenGame is Ownable {
 
     function setnewRootAddress(address newRootAddress) public onlyOwner {
         require(newRootAddress != address(0));
+        address2table[newRootAddress] = address2table[rootAddress];
         rootAddress = newRootAddress;
+        for (uint8 i = 0; i < tables.length; i++) {
+            tableAddresses[i][0] = rootAddress;
+        }
     }
 
     // for any accidentally lost funds
