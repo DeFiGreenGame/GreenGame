@@ -189,7 +189,7 @@ contract GreenGame is Ownable {
 
     function payoutDonationReferralReward(address winnerParent, uint256 value, uint8 tableNum) private {
         uint8 i = 0;
-        while ((address2table[winnerParent] < tableNum) && (i < 5)) {
+        while ((i < 5) && (address2table[winnerParent] < tableNum)) {
             missedDonationRefTableSum[tableNum][winnerParent] += value;
             missedDonationRefSum[winnerParent] += value;
             if (winnerParent == address(0)) {
@@ -212,7 +212,7 @@ contract GreenGame is Ownable {
 
     function payoutReferralReward(address parent, uint256 value, uint8 tableNum) private {
         uint8 i = 0;
-        while ((address2table[parent] < tableNum) && (i < 5)) {
+        while ((i < 5) && (address2table[parent] < tableNum)) {
             missedRefTableSum[tableNum][parent] += value;
             missedRefSum[parent] += value;
             if (parent == address(0)) {
