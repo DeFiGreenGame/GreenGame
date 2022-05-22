@@ -89,6 +89,10 @@ contract GreenGame is Ownable {
     mapping(uint256 => mapping(uint256 => uint256)) public charityMatrix; // [table_from][table_to] => charity
 
     mapping(address => address) public parents;
+    mapping(address => uint256) public address2id;
+    uint256 public counter;
+
+
 
     event InvestmentReceived(uint256 table);
     event ReferralRewardSent(address indexed to, uint256 value, uint256 table);
@@ -126,7 +130,9 @@ contract GreenGame is Ownable {
 
     // buy without parent passed explicitly
     receive() external payable {
-        if (parents[msg.sender] == address(0)) { // no parent found
+        if (address2id[msg.sender] == 0) { // first purchase
+            counter += 1;
+            address2id[msg.sender] = counter;
             process(rootAddress);
         } else {
             process(parents[msg.sender]);
@@ -136,16 +142,20 @@ contract GreenGame is Ownable {
     // buy with parent
     function buy(address parent) public payable {
         require(parent != address(0));
-        if ((parents[msg.sender] != parent) && (parents[msg.sender] != address(0))) { // prevent an attempt to change parent
-            process(parents[msg.sender]);
-        } else {
+        if (address2id[msg.sender] == 0) { // first purchase
+            counter += 1;
+            address2id[msg.sender] = counter;
             process(parent);
+        } else {
+            process(parents[msg.sender]);
         }
     }
 
     function process(address parent) private {
         require(msg.value > 0);
         require(msg.sender != parent);
+        require(msg.sender.code.length == 0);
+        require(parent.code.length == 0);
         uint256 currentTable = address2table[msg.sender];
         uint256 newTable = value2table[currentTable][msg.value];
         require(newTable > currentTable);

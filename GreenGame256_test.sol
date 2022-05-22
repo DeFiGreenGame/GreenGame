@@ -1,7 +1,7 @@
 pragma solidity 0.8.13;
 import "remix_tests.sol";
 import "remix_accounts.sol";
-import "GreenGame.sol";
+import "GreenGame256.sol";
 
 contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.getAccount(0)) {
     address testCharity;
@@ -70,7 +70,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         // the low level call will return `false` if its execution reverts
         (bool success, bytes memory returnData) = address(this).call(
             abi.encodeWithSignature(
-                "setTableParams(uint,uint,uint,uint,uint,uint,uint,uint,bool)",
+                "setTableParams(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bool)",
                 1_800000_000000_000000, 5, 10, 25, 5, 9, 4, 40, true
             )
         );
@@ -166,6 +166,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         uint total = rootAddress.balance;
         buy(acc2);
         Assert.equal(address2table[acc1], 1, "acc1 should jump to table 1");
+        Assert.equal(parents[acc1], acc2, "acc2 is a parent of acc1");
         uint diff = rootAddress.balance - total;
         Assert.equal(diff, msg.value, "zero sum game");
     }
@@ -200,6 +201,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
         uint total = charityAddress.balance + rootAddress.balance + acc1.balance;
         buy(acc1);
         Assert.equal(address2table[acc2], 1, "acc2 should jump to table 1");
+        Assert.equal(parents[acc2], acc1, "acc1 is a parent of acc2");
         uint diff = charityAddress.balance + rootAddress.balance + acc1.balance - total;
         Assert.equal(diff, msg.value, "zero sum game");
     }
@@ -240,6 +242,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
 
         buy(acc1);
         Assert.equal(address2table[acc3], 5, "acc3 should jump to table 5");
+        Assert.equal(parents[acc3], acc1, "acc1 is a parent of acc3");
 
         uint diffCharity = charityAddress.balance - charityBalance;
         Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
@@ -273,6 +276,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
 
         buy(acc1);
         Assert.equal(address2table[acc4], 5, "acc4 should jump to table 5");
+        Assert.equal(parents[acc4], acc1, "acc1 is a parent of acc4");
 
         uint diffCharity = charityAddress.balance - charityBalance;
         Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
@@ -323,15 +327,16 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
     function checkTableBuy5_2() public payable {
         uint charityBalance = charityAddress.balance;
         uint rootBalance = rootAddress.balance;
-        uint acc3Balance = acc3.balance;
+        uint acc3Balance = acc2.balance;
 
         buy(acc3);
         Assert.equal(address2table[acc1], 10, "acc1 should jump to table 10");
+        Assert.equal(parents[acc1], acc2, "acc2 is a parent of acc1");
 
         uint diffCharity = charityAddress.balance - charityBalance;
         Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
 
-        uint diffAcc3 = acc3.balance - acc3Balance;
+        uint diffAcc3 = acc2.balance - acc3Balance;
         // Assert.equal(diffAcc3, msg.value / 4, "25% goes to parent");
 
         uint diffRoot = rootAddress.balance - rootBalance;
@@ -356,11 +361,11 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
     function checkTableBuy6_2() public payable {
         uint charityBalance = charityAddress.balance;
         uint rootBalance = rootAddress.balance;
-        uint acc3Balance = acc3.balance;
         uint acc1Balance = acc1.balance;
 
         buy(acc3);
         Assert.equal(address2table[acc2], 10, "acc1 should jump to table 10");
+        Assert.equal(parents[acc2], acc1, "acc1 is a parent of acc2");
 
         uint diffCharity = charityAddress.balance - charityBalance;
         Assert.equal(diffCharity, msg.value / 10, "10% goes to charity");
@@ -374,5 +379,7 @@ contract GreenGameTest is GreenGame(TestsAccounts.getAccount(0), TestsAccounts.g
     function checkTableBuy6_3() public payable {
         Assert.equal(getTableAddressesCount(10), 3, "10 table (root)");
     }
+
+
 
 }
